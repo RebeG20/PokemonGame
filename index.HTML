@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pokémon Memory Game – English Actions</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@800;900&display=swap" rel="stylesheet">
+<style>
+:root{--red:#EE1515;--yellow:#FFD700;--blue:#3B4CCA;--dark:#0d0d1e;}
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+  font-family:'Nunito',sans-serif;
+  background:var(--dark);overflow:hidden;
+  height:100vh;width:100vw;
+  cursor:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'><circle cx='14' cy='14' r='13' fill='%23EE1515' stroke='black' stroke-width='2'/><rect x='1' y='12' width='26' height='4' fill='black'/><circle cx='14' cy='14' r='5' fill='white' stroke='black' stroke-width='2'/></svg>") 14 14,auto;
+}
+
+.bg{position:fixed;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse at 15% 50%,rgba(59,76,202,.35) 0%,transparent 55%),
+    radial-gradient(ellipse at 85% 20%,rgba(238,21,21,.22) 0%,transparent 50%),
+    radial-gradient(ellipse at 55% 85%,rgba(255,215,0,.13) 0%,transparent 50%),
+    linear-gradient(135deg,#0d0d1e 0%,#141430 55%,#0d1a2e 100%);
+}
+.bg-ball{position:fixed;border-radius:50%;background:linear-gradient(180deg,var(--red) 50%,#f8f8f8 50%);border:3px solid #222;opacity:.07;animation:floatUp linear infinite;z-index:0;}
+.bg-ball::before{content:'';position:absolute;top:calc(50% - 2px);left:0;right:0;height:4px;background:#222;}
+.bg-ball::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:30%;height:30%;border-radius:50%;background:#fff;border:3px solid #222;}
+@keyframes floatUp{from{transform:translateY(110vh) rotate(0)}to{transform:translateY(-160px) rotate(720deg)}}
+
+/* HUD */
+.hud-bar{position:fixed;top:0;left:0;right:0;height:7px;background:rgba(255,255,255,.08);z-index:200;}
+.hud-fill{height:100%;background:linear-gradient(90deg,var(--yellow),var(--red));transition:width .5s ease;border-radius:0 4px 4px 0;box-shadow:0 0 10px var(--yellow);}
+.hud-info{position:fixed;top:12px;right:16px;font-family:'Press Start 2P',cursive;font-size:10px;color:var(--yellow);background:rgba(0,0,0,.78);padding:7px 14px;border-radius:20px;border:2px solid var(--yellow);z-index:200;text-shadow:1px 1px 0 var(--red);}
+.score-box{position:fixed;top:12px;left:16px;font-family:'Press Start 2P',cursive;font-size:10px;color:#7fff7f;background:rgba(0,0,0,.78);padding:7px 14px;border-radius:20px;border:2px solid #4caf50;z-index:200;}
+
+/* SLIDES */
+.slide-wrap{position:relative;z-index:10;width:100vw;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.slide{display:none;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;padding:16px;animation:fadeIn .4s ease;}
+.slide.active{display:flex;}
+@keyframes fadeIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+
+/* TEXT */
+.px-title{font-family:'Press Start 2P',cursive;color:var(--yellow);text-shadow:4px 4px 0 var(--red),8px 8px 0 rgba(0,0,0,.4);text-align:center;line-height:1.9;}
+.px-sub{font-family:'Press Start 2P',cursive;color:var(--yellow);text-shadow:2px 2px 0 var(--red);text-align:center;}
+.info-txt{font-size:clamp(13px,1.8vw,19px);color:#cce0ff;text-align:center;text-shadow:2px 2px 4px rgba(0,0,0,.9);background:rgba(0,0,0,.5);padding:8px 20px;border-radius:12px;}
+
+/* QUESTION BOX */
+.q-box{
+  background:linear-gradient(135deg,#1a1a4e,#2a1a4e);
+  border:3px solid var(--yellow);border-radius:20px;
+  padding:14px 28px;margin-bottom:14px;
+  max-width:880px;width:92%;
+  box-shadow:0 0 28px rgba(255,215,0,.22),0 6px 0 rgba(0,0,0,.5);
+  animation:qPulse 2s ease-in-out infinite;
+}
+@keyframes qPulse{0%,100%{box-shadow:0 0 20px rgba(255,215,0,.2),0 6px 0 rgba(0,0,0,.5)}50%{box-shadow:0 0 40px rgba(255,215,0,.5),0 6px 0 rgba(0,0,0,.5)}}
+.q-label{font-family:'Press Start 2P',cursive;font-size:clamp(8px,1vw,12px);color:rgba(255,255,255,.55);margin-bottom:8px;text-transform:uppercase;letter-spacing:2px;}
+.q-text{font-family:'Press Start 2P',cursive;font-size:clamp(11px,1.7vw,19px);color:#fff;text-shadow:2px 2px 0 rgba(0,0,0,.5);line-height:1.6;}
+.q-text span{color:var(--yellow);text-shadow:2px 2px 0 var(--red);}
+
+/* CARDS AREA */
+.cards-area{display:flex;gap:clamp(12px,2.2vw,26px);justify-content:center;align-items:flex-end;flex-wrap:wrap;width:100%;max-width:1040px;}
+
+/* IMAGE CARD */
+.img-card{
+  background:#fff;border-radius:16px;
+  border:4px solid var(--yellow);
+  box-shadow:0 8px 26px rgba(0,0,0,.5),0 0 0 2px var(--red);
+  width:clamp(160px,21vw,250px);overflow:hidden;
+  transition:transform .3s;position:relative;
+}
+.img-card:hover{transform:translateY(-5px);}
+.card-face{
+  width:100%;height:clamp(140px,17vh,190px);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+  font-size:clamp(64px,9vw,95px);
+}
+.e-main{animation:eFloat 2.2s ease-in-out infinite;display:inline-block;}
+.e-ghost{position:absolute;opacity:.12;}
+@keyframes eFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-9px) scale(1.1)}}
+.card-label{font-family:'Press Start 2P',cursive;font-size:clamp(6.5px,.85vw,9.5px);color:#1a1a2e;text-align:center;padding:9px 6px;background:var(--yellow);line-height:1.75;}
+
+/* POKEBALL SLOT */
+.ball-slot{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;}
+.pos-badge{font-family:'Press Start 2P',cursive;font-size:12px;color:#fff;background:var(--blue);border-radius:8px;padding:4px 12px;border:2px solid rgba(255,255,255,.3);}
+.pb-wrap{width:clamp(120px,17vw,190px);height:clamp(120px,17vw,190px);transition:transform .2s;}
+.pb-wrap:hover{transform:scale(1.1) rotate(13deg);}
+.pb-wrap:active{transform:scale(.92);}
+.pb-wrap svg{width:100%;height:100%;filter:drop-shadow(0 6px 14px rgba(0,0,0,.6));animation:bBounce 1.8s ease-in-out infinite;}
+@keyframes bBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-11px)}}
+.pb-wrap:hover svg{animation:bWiggle .4s ease!important;}
+@keyframes bWiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-18deg)}75%{transform:rotate(18deg)}}
+
+.ball-slot.correct .pb-wrap svg{filter:drop-shadow(0 0 20px #22cc44)!important;animation:none!important;}
+.ball-slot.wrong .pb-wrap svg{filter:drop-shadow(0 0 16px #ff2222)!important;animation:none!important;opacity:.45;}
+.ball-slot.correct .pos-badge{background:#22cc44;}
+.ball-slot.wrong .pos-badge{background:#cc2222;}
+
+
+
+/* FEEDBACK */
+.fb-bar{font-family:'Press Start 2P',cursive;font-size:clamp(12px,1.8vw,20px);padding:12px 26px;border-radius:14px;margin-top:12px;min-height:52px;display:flex;align-items:center;justify-content:center;transition:all .3s;}
+.fb-bar.correct{background:linear-gradient(135deg,#22cc44,#119922);color:#fff;box-shadow:0 6px 0 #0a5510,0 0 26px rgba(34,204,68,.55);animation:fbPop .3s cubic-bezier(.175,.885,.32,1.275);}
+.fb-bar.wrong{background:linear-gradient(135deg,#ff4444,#bb1111);color:#fff;box-shadow:0 6px 0 #660000,0 0 26px rgba(255,68,68,.55);animation:fbPop .3s cubic-bezier(.175,.885,.32,1.275);}
+.fb-bar.empty{background:transparent;box-shadow:none;}
+@keyframes fbPop{from{transform:scale(0)}to{transform:scale(1)}}
+
+/* SHUFFLE */
+.shuf-title{font-family:'Press Start 2P',cursive;font-size:clamp(16px,2.8vw,32px);color:var(--yellow);text-shadow:3px 3px 0 var(--red);animation:sBounce .5s ease-in-out infinite alternate;}
+@keyframes sBounce{from{transform:translateY(0)}to{transform:translateY(-10px)}}
+.card-moving{animation:cMove .55s ease-in-out both;}
+@keyframes cMove{0%{transform:scale(1)}35%{transform:scale(.65) rotate(-12deg) translateY(-28px)}70%{transform:scale(.65) rotate(12deg) translateY(-18px)}100%{transform:scale(1)}}
+
+/* BUTTONS */
+.btn{font-family:'Press Start 2P',cursive;font-size:clamp(8px,1.1vw,13px);padding:13px 26px;border:none;border-radius:12px;cursor:pointer;transition:all .18s;text-shadow:2px 2px 0 rgba(0,0,0,.4);box-shadow:0 6px 0 rgba(0,0,0,.45),0 8px 18px rgba(0,0,0,.3);margin:7px;}
+.btn:hover{transform:translateY(-3px);box-shadow:0 9px 0 rgba(0,0,0,.45),0 12px 22px rgba(0,0,0,.3);}
+.btn:active{transform:translateY(2px);box-shadow:0 3px 0 rgba(0,0,0,.45);}
+.btn-yellow{background:linear-gradient(135deg,#ffe040,#ffb800);color:#1a1a1e;}
+.btn-red{background:linear-gradient(135deg,#ff4444,#cc0000);color:#fff;}
+.btn-green{background:linear-gradient(135deg,#44cc44,#229922);color:#fff;}
+.btn-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px;}
+
+/* REVEAL */
+.reveal-pop{animation:rPop .55s cubic-bezier(.175,.885,.32,1.275) both;}
+@keyframes rPop{from{transform:scale(0) rotate(-180deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+
+/* TITLE */
+.pika{font-size:clamp(60px,9vw,96px);animation:pikaPulse 1.2s ease-in-out infinite;}
+@keyframes pikaPulse{0%,100%{transform:scale(1) rotate(-5deg)}50%{transform:scale(1.12) rotate(5deg)}}
+.star-row{font-size:clamp(38px,5.5vw,68px);margin:12px 0;letter-spacing:8px;}
+
+/* FLASH */
+.flash{position:fixed;inset:0;z-index:500;pointer-events:none;opacity:0;transition:opacity .15s;}
+.flash.cf{background:rgba(0,200,80,.13);}
+.flash.wf{background:rgba(220,0,0,.13);}
+.flash.on{opacity:1;}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div id="bgBalls"></div>
+<div class="hud-bar"><div class="hud-fill" id="hudFill" style="width:0%"></div></div>
+<div class="hud-info" id="hudInfo">Q 1 / 13</div>
+<div class="score-box" id="scoreBox">⭐ 0 / 13</div>
+<div class="flash" id="flash"></div>
+
+<div class="slide-wrap">
+
+  <!-- TITLE -->
+  <div class="slide active" id="sl-title">
+    <div class="pika">⚡</div>
+    <h1 class="px-title" style="font-size:clamp(15px,2.6vw,32px);margin:16px 0 10px">POKÉMON<br>MEMORY GAME</h1>
+    <p class="info-txt" style="margin-bottom:14px">Remember where each action is hiding!</p>
+    <p style="font-family:'Press Start 2P',cursive;font-size:9px;color:rgba(255,255,255,.45);margin-bottom:22px;background:rgba(255,255,255,.06);padding:7px 16px;border-radius:12px;">13 actions · 4th Grade English 🎮</p>
+    <div class="btn-row"><button class="btn btn-yellow" onclick="startGame()">▶ START!</button></div>
+  </div>
+
+  <!-- SHOW PHASE -->
+  <div class="slide" id="sl-show">
+    <div class="px-sub" id="showRound" style="font-size:clamp(8px,1.1vw,13px);margin-bottom:10px;background:rgba(0,0,0,.6);padding:8px 20px;border-radius:18px;border:2px solid var(--yellow)">👀 Group 1 of 5</div>
+    <p class="info-txt" style="margin-bottom:14px">Study these actions carefully! 👀</p>
+    <div class="cards-area" id="showCards"></div>
+    <div class="btn-row"><button class="btn btn-red" onclick="goShuffle()">🔀 SHUFFLE!</button></div>
+  </div>
+
+  <!-- SHUFFLE PHASE -->
+  <div class="slide" id="sl-shuffle">
+    <div class="shuf-title" style="margin-bottom:16px">🔀 SHUFFLING! 🔀</div>
+    <p class="info-txt" style="margin-bottom:16px">Watch carefully where they go…</p>
+    <div class="cards-area" id="shuffleCards"></div>
+  </div>
+
+  <!-- GUESS PHASE -->
+  <div class="slide" id="sl-guess">
+    <div class="q-box">
+      <div class="q-label">⚡ Find the action…</div>
+      <div class="q-text">Where is <span id="qTarget">EAT PIZZA</span>?</div>
+    </div>
+
+    <div class="cards-area" id="guessCards"></div>
+    <div class="fb-bar empty" id="fbBar"></div>
+  </div>
+
+  <!-- END -->
+  <div class="slide" id="sl-end">
+    <div class="pika">🏆</div>
+    <h2 class="px-title" style="font-size:clamp(13px,2vw,24px);margin:14px 0 10px">GAME COMPLETE!</h2>
+    <div class="star-row" id="endStars">⭐⭐⭐</div>
+    <div class="info-txt" id="endScore" style="font-size:clamp(14px,1.9vw,20px);font-weight:900;margin:10px 0 14px">You got 13 / 13!</div>
+    <p class="info-txt">Amazing work, Pokémon Trainers! 🎉</p>
+    <div class="btn-row" style="margin-top:18px">
+      <button class="btn btn-yellow" onclick="restartGame()">🔄 PLAY AGAIN</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ─── DATA ─── */
+const ALL = [
+  {label:"Buy Candy",         emoji:"🍬", bg:"#fff0f5"},
+  {label:"See a Movie",       emoji:"🎬", bg:"#eef3ff"},
+  {label:"Take a Picture",    emoji:"📷", bg:"#efffee"},
+  {label:"Go Shopping",       emoji:"🛍️", bg:"#fff8ee"},
+  {label:"Have a Milkshake",  emoji:"🥤", bg:"#f8f0ff"},
+  {label:"Eat Pizza",         emoji:"🍕", bg:"#fff4ee"},
+  {label:"Read a Book",       emoji:"📚", bg:"#f4fff0"},
+  {label:"Write a Poem",      emoji:"✍️", bg:"#eef4ff"},
+  {label:"Do Karate",         emoji:"🥋", bg:"#fff0ee"},
+  {label:"Sing a Song",       emoji:"🎤", bg:"#fffde8"},
+  {label:"Make a Video",      emoji:"🎥", bg:"#eeeeff"},
+  {label:"Build a Tree House",emoji:"🌳", bg:"#efffee"},
+  {label:"Draw a Picture",    emoji:"🎨", bg:"#fff0fb"},
+];
+
+const POS = ["A","B","C"];
+/* ─── STATE ─── */
+let rounds=[], rIdx=0, qIdx=0;
+let shuffledGroup=[], score=0, totalQ=0, answered=false;
+
+/* ─── BUILD ROUNDS ─── */
+/* Groups: 3,3,3,2,2 → 13 total items */
+function buildRounds(){
+  const items=[...ALL];
+  const sizes=[3,3,3,2,2];
+  rounds=[]; let cur=0;
+  sizes.forEach(sz=>{
+    const g=items.slice(cur,cur+sz);
+    const qs=[...g.keys()].sort(()=>Math.random()-.5);
+    rounds.push({group:g,questions:qs});
+    cur+=sz;
+  });
+  rIdx=0;qIdx=0;score=0;totalQ=0;
+}
+
+/* ─── HELPERS ─── */
+function showSlide(id){
+  document.querySelectorAll('.slide').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function updateHUD(){
+  document.getElementById('hudFill').style.width=(totalQ/13*100)+'%';
+  document.getElementById('hudInfo').textContent=`Q ${Math.min(totalQ+1,13)} / 13`;
+  document.getElementById('scoreBox').textContent=`⭐ ${score} / 13`;
+}
+
+function makeCard(item,showLabel=true,extra=''){
+  return `<div class="img-card ${extra}">
+    <div class="card-face" style="background:${item.bg}">
+      <span class="e-main">${item.emoji}</span>
+      <span class="e-ghost" style="font-size:46px;bottom:4px;right:6px">${item.emoji}</span>
+      <span class="e-ghost" style="font-size:32px;top:4px;left:6px">${item.emoji}</span>
+    </div>
+    <div class="card-label">${showLabel?item.label:'???'}</div>
+  </div>`;
+}
+
+function pbSVG(){
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="47" fill="#EE1515" stroke="#111" stroke-width="3"/>
+    <rect x="3" y="0" width="94" height="50" rx="0" fill="#EE1515"/>
+    <rect x="3" y="50" width="94" height="50" rx="0" fill="#f8f8f8"/>
+    <rect x="0" y="46" width="100" height="8" fill="#111"/>
+    <circle cx="50" cy="50" r="47" fill="none" stroke="#111" stroke-width="3"/>
+    <circle cx="50" cy="50" r="13" fill="#fff" stroke="#111" stroke-width="4"/>
+    <circle cx="50" cy="50" r="7" fill="#ddd" stroke="#111" stroke-width="2"/>
+    <circle cx="44" cy="44" r="3" fill="rgba(255,255,255,.8)"/>
+  </svg>`;
+}
+
+function doFlash(type){
+  const el=document.getElementById('flash');
+  el.className=`flash ${type} on`;
+  setTimeout(()=>el.className='flash',380);
+}
+
+/* ─── GAME FLOW ─── */
+function startGame(){
+  buildRounds();updateHUD();loadRound();
+}
+
+function loadRound(){
+  const r=rounds[rIdx];
+  document.getElementById('showRound').textContent=`👀 Group ${rIdx+1} of 5 – LOOK & REMEMBER!`;
+  document.getElementById('showCards').innerHTML=r.group.map(i=>makeCard(i,true)).join('');
+  showSlide('sl-show');
+}
+
+function goShuffle(){
+  const r=rounds[rIdx];
+  shuffledGroup=[...r.group].sort(()=>Math.random()-.5);
+
+  const cont=document.getElementById('shuffleCards');
+  // Show original labeled cards
+  cont.innerHTML=r.group.map(i=>makeCard(i,true)).join('');
+  showSlide('sl-shuffle');
+
+  // Animate 3 shuffle passes
+  let pass=0;
+  const PASSES=3;
+
+  function doPass(){
+    if(pass>=PASSES){
+      // Show final positions without labels briefly
+      cont.innerHTML=shuffledGroup.map(i=>makeCard(i,false)).join('');
+      setTimeout(loadQuestion,700);
+      return;
+    }
+    const cards=[...cont.querySelectorAll('.img-card')];
+    const a=Math.floor(Math.random()*cards.length);
+    let b=a;
+    while(b===a)b=Math.floor(Math.random()*cards.length);
+
+    [cards[a],cards[b]].forEach(c=>c.classList.add('card-moving'));
+
+    setTimeout(()=>{
+      [cards[a],cards[b]].forEach(c=>c.classList.remove('card-moving'));
+      // swap in DOM
+      const next=cards[a].nextSibling;
+      cont.insertBefore(cards[b],cards[a]);
+      next?cont.insertBefore(cards[a],next):cont.appendChild(cards[a]);
+      pass++;
+      setTimeout(doPass,360);
+    },480);
+  }
+  setTimeout(doPass,500);
+}
+
+function loadQuestion(){
+  answered=false;
+
+  const r=rounds[rIdx];
+  const tIdx=r.questions[qIdx];
+  const target=r.group[tIdx];
+  const correctPos=shuffledGroup.indexOf(target);
+
+  document.getElementById('qTarget').textContent=target.label.toUpperCase();
+
+  // Build pokeball slots
+  const area=document.getElementById('guessCards');
+  area.innerHTML=shuffledGroup.map((_,i)=>`
+    <div class="ball-slot" id="slot-${i}" onclick="guess(${i},${correctPos})">
+      <div class="pos-badge">Position ${POS[i]}</div>
+      <div class="pb-wrap">${pbSVG()}</div>
+      <div style="font-family:'Press Start 2P',cursive;font-size:18px;color:#fff;background:var(--red);border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:3px solid var(--yellow);box-shadow:0 3px 8px rgba(0,0,0,.5);">${POS[i]}</div>
+    </div>`).join('');
+
+  const fb=document.getElementById('fbBar');
+  fb.className='fb-bar empty';fb.textContent='';
+
+  updateHUD();
+  showSlide('sl-guess');
+}
+
+function guess(chosen,correct){
+  if(answered)return;
+  answered=true;
+
+  const r=rounds[rIdx];
+  const target=r.group[r.questions[qIdx]];
+  const fb=document.getElementById('fbBar');
+
+  // Style slots
+  document.getElementById(`slot-${chosen}`).classList.add(chosen===correct?'correct':'wrong');
+  if(chosen!==correct)document.getElementById(`slot-${correct}`).classList.add('correct');
+
+  // Reveal correct card
+  setTimeout(()=>{
+    const slot=document.getElementById(`slot-${correct}`);
+    const wrap=slot.querySelector('.pb-wrap');
+    const tmp=document.createElement('div');
+    tmp.innerHTML=makeCard(target,true,'reveal-pop');
+    wrap.replaceWith(tmp.firstElementChild);
+  },320);
+
+  if(chosen===correct){
+    score++;doFlash('cf');
+    fb.className='fb-bar correct';
+    fb.textContent='✅ CORRECT! Great job! 🎉';
+  } else {
+    doFlash('wf');
+    fb.className='fb-bar wrong';
+    fb.innerHTML=`❌ Nope! It was Position <strong>${POS[correct]}</strong>!`;
+  }
+
+  totalQ++;updateHUD();
+  setTimeout(advance,2300);
+}
+
+function advance(){
+  qIdx++;
+  if(qIdx>=rounds[rIdx].questions.length){
+    qIdx=0;rIdx++;
+    if(rIdx>=rounds.length){endGame();return;}
+    loadRound();
+  } else {
+    loadQuestion();
+  }
+}
+
+function endGame(){
+  document.getElementById('endScore').textContent=`You got ${score} / 13 correct!`;
+  const p=score/13;
+  document.getElementById('endStars').textContent=p>=.85?'⭐⭐⭐':p>=.6?'⭐⭐':'⭐';
+  document.getElementById('hudFill').style.width='100%';
+  document.getElementById('hudInfo').textContent='🏆 DONE!';
+  showSlide('sl-end');
+}
+
+function restartGame(){
+  buildRounds();updateHUD();showSlide('sl-title');
+}
+
+/* ─── BG POKEBALLS ─── */
+(function(){
+  const w=document.getElementById('bgBalls');
+  for(let i=0;i<14;i++){
+    const b=document.createElement('div');
+    b.className='bg-ball';
+    const sz=28+Math.random()*68;
+    b.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}vw;animation-duration:${9+Math.random()*18}s;animation-delay:${Math.random()*-24}s;`;
+    w.appendChild(b);
+  }
+})();
+
+/* ─── EMOJI FLOAT ─── */
+const s=document.createElement('style');
+s.textContent=`@keyframes eFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-9px) scale(1.1)}}`;
+document.head.appendChild(s);
+</script>
+</body>
+</html>
